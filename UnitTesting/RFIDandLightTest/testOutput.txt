@@ -1,0 +1,12 @@
+This code scan the MIFARE Classsic NUID.
+Using the following key: FF FF FF FF FF FFPICC type: MIFARE 1KB
+A new card has been detected.
+The NUID tag is:
+In hex:  59 EA D4 A3
+In dec:  89 234 212 163
+Turn on green lights
+Turn off lights
+PICC type: MIFARE 1KB
+Previous card detected
+Turn on red lights
+Turn off lights

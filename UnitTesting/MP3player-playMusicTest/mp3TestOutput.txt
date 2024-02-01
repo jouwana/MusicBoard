@@ -1,0 +1,29 @@
+reset MP3 success
+MP3_select_SD_card
+set volume= 2 of 30
+playing directory 2 file number 1
+set volume= 15 of 30
+playing directory 2 file number 2
+set volume= 25 of 30
+playing directory 2 file number 3
+playing directory 1 file number 1
+playing directory 1 file number 2
+set volume= 2 of 30
+playing directory 2 file number 1
+set volume= 15 of 30
+playing directory 2 file number 2
+set volume= 25 of 30
+playing directory 2 file number 3
+playing directory 1 file number 1
+playing directory 1 file number 2
+set volume= 2 of 30
+playing directory 2 file number 1
+set volume= 15 of 30
+playing directory 2 file number 2
+set volume= 25 of 30
+playing directory 2 file number 3
+playing directory 1 file number 1
+
+
+
+

@@ -31,16 +31,23 @@ HardwareSerial MP3(2); // Use UART2 for MP3 player communication
 #define RX 16
 #define TX 17
 
+#define START_PIN 21
+//we will use pins 12,14,27,26,25,32,33 for the buttons
+
 MP3Commands MP3_controller = MP3Commands(RX, TX);
 
 bool authorized_card = false;
 unsigned long previousMillis = 0;
+int[] lastStates = [1, 1, 1, 1, 1, 1, 1];
+int[] currentStates = [1, 1, 1, 1, 1, 1, 1];
 
 void setup()
 {
   // Initiate the serial monitor.
   Serial.begin(9600);
   Serial.setTimeout(10);
+
+  pinMode(START_PIN, INPUT_PULLUP);
 
   SPI.begin();     // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522
@@ -74,6 +81,9 @@ void setup()
 
 void loop()
 {
+  lastStates[1] = currentStates[1];
+  currentStates[1] = digitalRead(START_PIN);
+
   if (lightsOn)
   {
     turnOffPixels();
@@ -89,6 +99,7 @@ void loop()
   if (cardType == AUTHORIZED)
   {
     turnOnPixels(1);
+    
 
     for (int i = 0; i < 2; i++)
     {

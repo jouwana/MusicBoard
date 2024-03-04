@@ -9,6 +9,8 @@
 #endif
 
 extern HardwareSerial MP3;
+extern int lastStates;
+extern int currentStates;
 
 class MP3Commands
 {

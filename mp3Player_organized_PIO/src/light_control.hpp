@@ -8,7 +8,7 @@
 #define NUMPIXELS 3 // Popular NeoPixel ring size
 
 // Which pin on the Arduino is connected to the NeoPixels?
-#define PIXEL_PIN 26 // On Trinket or Gemma, suggest changing this to 1
+#define PIXEL_PIN 13 // On Trinket or Gemma, suggest changing this to 1
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
 

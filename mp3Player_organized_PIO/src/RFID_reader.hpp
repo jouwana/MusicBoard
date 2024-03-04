@@ -71,7 +71,7 @@ CARDTYPE handle_reads()
         rfid.uid.uidByte[3] != nuidPICC[3])
     {
         Serial.println(F("A new card has been detected."));
-        CARDTYPE cardType = AUTHORIZED;
+        cardType = AUTHORIZED;
         // Store NUID into nuidPICC array
         for (byte i = 0; i < 4; i++)
         {

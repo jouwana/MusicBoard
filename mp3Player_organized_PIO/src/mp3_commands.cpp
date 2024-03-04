@@ -60,6 +60,12 @@ void MP3Commands::play_controls()
         mp3Basic(volume_down_CMD);
     }
 
+    if(lastStates[1] == 0 && currentStates[1] == 1){
+        play_filename(folder_number, file_counter);
+        nextFile();
+        playing = true;
+    }
+
     // we play here if we use 'start' to begin playing, or if previous song ended and we are in playing mode
     if ((check_MP3_status() == STOPPED && playing) || str == "start")
     {

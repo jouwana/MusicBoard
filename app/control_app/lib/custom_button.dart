@@ -1,4 +1,3 @@
-import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -29,7 +28,7 @@ class CustomButton extends StatelessWidget {
       buttonWidth = screenWidth * 0.75;
     }
 
-    return Container(
+    return SizedBox(
       width: buttonWidth,
       height: height,
       child: ElevatedButton(

@@ -21,7 +21,7 @@ class CardSetupPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CardMappingPage(callerID: 'addCard'),
+                    builder: (context) => const CardMappingPage(callerID: 'addCard'),
                   ),
                 );
               },

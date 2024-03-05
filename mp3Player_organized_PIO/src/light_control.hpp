@@ -16,27 +16,43 @@ extern unsigned long previousMillis;
 const long interval = 1500;
 static bool lightsOn = false;
 
-void turnOnPixels(int isNew)
+void turnOnPixels(int color)
 {
   for (int i = 0; i < NUMPIXELS; i++)
   { // For each pixel...
     // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
     // Here we're using a moderately bright green color:
-    if (isNew)
+    if (color == 1)
     {
       pixels.setPixelColor(i, pixels.Color(0, 150, 0));
     }
-    else
+    else if (color == 0)
     {
       pixels.setPixelColor(i, pixels.Color(150, 0, 0));
     }
+    else
+    { //supposeddly orange
+      pixels.setPixelColor(i, pixels.Color(255, 165, 0));
+    }
   }
-  if (isNew)
-    Serial.println(F("Turn on green lights"));
-  else
-    Serial.println(F("Turn on red lights"));
-  pixels.show();
   lightsOn = true;
+  switch(color){
+    case 0:{
+      Serial.println(F("Turn on red lights"));
+      break;
+    }
+    case 1:{
+      Serial.println(F("Turn on green lights"));
+      break;
+    }
+    default:{
+      Serial.println(F("Turn on orange lights"));
+      lightsOn = false;
+      break;
+    }
+  }
+
+  pixels.show();
   previousMillis = millis(); // Reset the timer
 }
 

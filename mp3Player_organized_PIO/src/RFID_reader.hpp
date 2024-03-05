@@ -1,14 +1,20 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include <FS_control.hpp>
+
+extern FSControl FSC;
 
 enum CARDTYPE
 {
     PREVIOUS,
     AUTHORIZED,
+    NEW,
     UNSUPPORTED,
     NO_CARD
 };
+
+
 
 // Definitions Pin and setups
 #define SS_PIN 5
@@ -20,17 +26,6 @@ MFRC522::MIFARE_Key key;
 
 // Init array that will store new NUID
 byte nuidPICC[4];
-
-// struct to hold RFID card ID
-struct RFIDCard
-{
-    byte hexID[4];
-    int folderId;
-};
-
-// Init array to store scanned RFID card IDs
-RFIDCard scannedCards[2] = {
-    {{0x59, 0xEA, 0xD4, 0xA3}, 1}, {{0xC9, 0xA6, 0xC1, 0xA2}, 2}};
 
 // add function definition to all the helper functions used in the code
 
@@ -70,21 +65,20 @@ CARDTYPE handle_reads()
         rfid.uid.uidByte[2] != nuidPICC[2] ||
         rfid.uid.uidByte[3] != nuidPICC[3])
     {
-        Serial.println(F("A new card has been detected."));
-        cardType = AUTHORIZED;
+        Serial.println(F("A different card has been detected on scanner."));
         // Store NUID into nuidPICC array
         for (byte i = 0; i < 4; i++)
         {
             nuidPICC[i] = rfid.uid.uidByte[i];
         }
 
-        Serial.println(F("The NUID tag is:"));
-        Serial.print(F("In hex: "));
-        printHex(rfid.uid.uidByte, rfid.uid.size);
-        Serial.println();
-        Serial.print(F("In dec: "));
-        printDec(rfid.uid.uidByte, rfid.uid.size);
-        Serial.println();
+        if(FSC.checkCardInFile(String(nuidPICC[0]) + String(nuidPICC[1]) + String(nuidPICC[2]) + String(nuidPICC[3]))){
+            cardType = AUTHORIZED;
+        }
+        else{
+            cardType = NEW;
+        }   
+
     }
     else
     {
@@ -123,4 +117,18 @@ void printDec(byte *buffer, byte bufferSize)
         Serial.print(' ');
         Serial.print(buffer[i], DEC);
     }
+}
+
+
+void clearNUID()
+{
+    for (byte i = 0; i < 4; i++)
+    {
+        nuidPICC[i] = 0;
+    }
+}
+
+
+String getLastCard(){
+    return String(nuidPICC[0]) + String(nuidPICC[1]) + String(nuidPICC[2]) + String(nuidPICC[3]);
 }

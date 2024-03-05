@@ -11,6 +11,8 @@
 extern HardwareSerial MP3;
 extern int lastStates;
 extern int currentStates;
+extern int getNextFolder();
+extern int getPrevFolder();
 
 class MP3Commands
 {
@@ -58,12 +60,11 @@ public: // Define the Serial MP3 Player Module.
     };
 
     bool playing = false;
-    String last_cmd = "";
     uint8_t folder_number = 1;
     uint8_t file_counter = 1;
 
     void stop();
-    void play_controls();
+    void play_controls(String str);
     void mp3Basic(uint8_t command);
     MP3_status check_MP3_status();
     bool reset_mp3();

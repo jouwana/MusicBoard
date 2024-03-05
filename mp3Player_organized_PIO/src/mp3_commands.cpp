@@ -7,17 +7,8 @@ void MP3Commands::stop()
     mp3Basic(stop_CMD);
 }
 
-void MP3Commands::play_controls()
+void MP3Commands::play_controls(String str)
 {
-    // if there is text in the serial monitor buffer, then read it.
-    String str = "";
-    if (Serial.available() > 0)
-    {
-        str = Serial.readString();
-        str.trim();
-        Serial.println(str);
-        last_cmd = str;
-    }
 
     if (str == "play")
     {
@@ -60,7 +51,7 @@ void MP3Commands::play_controls()
         mp3Basic(volume_down_CMD);
     }
 
-    if(lastStates[1] == 0 && currentStates[1] == 1){
+    if(lastStates == 0 && currentStates == 1){
         play_filename(folder_number, file_counter);
         nextFile();
         playing = true;
@@ -261,7 +252,7 @@ void MP3Commands::sendBytes(uint8_t nbytes)
 void MP3Commands::nextFile()
 {
     file_counter++;
-    if (file_counter > 5)
+    if (file_counter > 4)
     {
         nextFolder();
         file_counter = 1;
@@ -270,11 +261,7 @@ void MP3Commands::nextFile()
 
 void MP3Commands::nextFolder()
 {
-    folder_number++;
-    if (folder_number > 4)
-    {
-        folder_number = 1;
-    }
+    folder_number = getNextFolder();
 }
 
 void MP3Commands::prevFile()
@@ -283,15 +270,11 @@ void MP3Commands::prevFile()
     if (file_counter < 1)
     {
         prevFolder();
-        file_counter = 5;
+        file_counter = 4;
     }
 }
 
 void MP3Commands::prevFolder()
 {
-    folder_number--;
-    if (folder_number < 1)
-    {
-        folder_number = 4;
-    }
+    folder_number = getPrevFolder();
 }

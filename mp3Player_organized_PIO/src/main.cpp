@@ -143,7 +143,7 @@ void loop()
   //   delay(100); // stability
   // }
 
-  else {
+  //else {
     if (SerialBT.available())
     {
 
@@ -307,5 +307,5 @@ void loop()
         clearNUID();
       }
     }
-  }
+  //}
 }

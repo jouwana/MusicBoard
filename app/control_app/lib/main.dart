@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
-<<<<<<< Updated upstream
-=======
 import 'package:flutter/services.dart';
 import 'card_pages/add_card.dart';
->>>>>>> Stashed changes
 import 'folder_edit.dart';
 import 'add_folder.dart';
 import 'card_pages/card_stats.dart';
 import 'global_stats.dart';
 import 'card_pages/card_setup.dart';
 import 'card_pages/card_profile.dart';
-import 'card_pages/add_card.dart';
 import 'menu.dart';
 import 'Helpers/bluetooth_manager.dart';
 
@@ -44,7 +40,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/adminLogin': (context) => const AdminLoginPage(),
         '/menu': (context) => const MenuPage(),
-        '/addCard': (context) => const AddCardPage(),
+        '/addCard': (context) => const ScanCardPage(),
         '/cardProfile': (context) => const CardProfilePage(),
         '/cardSetup': (context) => const CardSetupPage(),
         '/globalStatistics': (context) => const GlobalStatisticsPage(),

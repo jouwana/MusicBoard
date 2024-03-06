@@ -5,6 +5,11 @@ class CardSetupPage extends StatelessWidget {
   const CardSetupPage({super.key});
 
   @override
+  void dispose() {
+    // Add dispose method here
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -21,7 +26,7 @@ class CardSetupPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CardMappingPage(callerID: 'addCard'),
+                    builder: (context) => CardMappingPage(callerID: 'addCard'),
                   ),
                 );
               },

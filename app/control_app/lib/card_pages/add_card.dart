@@ -1,8 +1,38 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream
+
+
+class AddCardPage extends StatelessWidget {
+  const AddCardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Card'),
+      ),
+      body: Center(
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.75,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'To add a new card, please scan the card using the reader on the board',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
+              ),
+              const SizedBox(height: 40),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/cardSetup');
+                },
+                child: const Text('Scan Card'),
+              ),
+            ],
+=======
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import '../Helpers/bluetooth_manager.dart';
 
 class ScanCardPage extends StatefulWidget {
   const ScanCardPage({super.key});
@@ -12,54 +42,55 @@ class ScanCardPage extends StatefulWidget {
 }
 
 class _ScanCardPageState extends State<ScanCardPage> {
-  late BluetoothConnection connection; // Define BluetoothConnection variable
-  bool isConnected = false;
+  late BluetoothHelper _bluetoothManager; // Define BluetoothManager variable
+  bool isConnecting = false;
   bool isScanning = false;
 
   @override
   void initState() {
     super.initState();
-    _connectToESP32();
-  }
-
-  Future<void> _connectToESP32() async {
-    List<BluetoothDevice> devices = await FlutterBluetoothSerial.instance.getBondedDevices();
-    for (BluetoothDevice device in devices) {
-      if (device.name == 'ESP32') { // Replace 'ESP32' with your ESP32 device name
-        try {
-          connection = await BluetoothConnection.toAddress(device.address);
-          setState(() {
-            isConnected = true; // Update connection status
-          });
-        } catch (e) {
-          print('Failed to connect to ESP32: $e');
-        }
-        break;
-      }
-    }
+    _bluetoothManager = BluetoothHelper.instance; // Get BluetoothManager instance
   }
 
   void _sendCommandToESP32(String command) async {
-    if (isConnected) {
-      try {
-        connection.output.add(utf8.encode(command)); // Send command as UTF-8 bytes
-        await connection.output.allSent;
+    setState(() {
+      isConnecting = true; // Toggle isConnecting value
+    });
+    bool response = await _bluetoothManager.sendCommandToESP32(command); // Send command to ESP32
+    if(response) {
+      setState(() {
+        isConnecting = false; // Toggle isConnecting value
+      });
+      if(command == 'scan') {
+        _awaitResponse(); // Await response from ESP32
         setState(() {
           isScanning = true; // Toggle isScanning value
         });
-        _awaitResponse(); // Wait for response from ESP32
-      } catch (e) {
-        print('Failed to send command to ESP32: $e');
       }
-    } else {
-      print('Not connected to ESP32');
+      else if(command == 'exit_scan') {
+        setState(() {
+          isScanning = false; // Toggle isScanning value
+        });
+      }
+    }
+    else{
+      setState(() {
+        isConnecting = false; // Toggle isConnecting value
+        isScanning = false; // Toggle isScanning value
+      });
+      // Show an error message if command sending failed
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send command to ESP32, please check connection and try again.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
 
-  void _awaitResponse() {
-    connection.input?.listen((Uint8List data) {
-      String dataString = utf8.decode(data);
-      String response = dataString.trim();
+  void _awaitResponse() async {
+     //add a limit of 1 minute to await response
+      String? response = await _bluetoothManager.awaitResponse(neededCommand: 'scan', failCommand: 'exit_scan'); // Await response from ESP32
       if (response == 'new') {
         // If response is 'new', navigate to CardSetupPage
         setState(() {
@@ -67,17 +98,39 @@ class _ScanCardPageState extends State<ScanCardPage> {
         });
         Navigator.pushNamed(context, '/cardSetup');
       }
-    });
+      else if(response == 'connection_error') {
+        setState(() {
+          isScanning = false; // Toggle isScanning value
+          isConnecting = false; // Toggle isConnecting value
+        });
+        // If response is 'connection_error', show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to connect to ESP32, please check your connection and try again.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      else{
+        setState(() {
+          isScanning = false; // Toggle isScanning value
+          isConnecting = false; // Toggle isConnecting value
+        });
+        // If response is null, show an error message
+        _sendCommandToESP32('exit_scan'); // Send command to ESP32 to exit scan mode
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text( 'Error: $response, please try again.'),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
   }
 
   @override
-  void dispose() {
-    if(connection.isConnected) {
-      _sendCommandToESP32(
-          'exit_scan'); // Send command to ESP32 to exit scan mode
-      connection.finish(); // Finish the connection
-      super.dispose();
-    }
+  void dispose() async {
+    _bluetoothManager.resetConnection(); // Reset Bluetooth connection
+    super.dispose();
   }
 
   @override
@@ -85,7 +138,6 @@ class _ScanCardPageState extends State<ScanCardPage> {
     return WillPopScope(
         onWillPop: () async {
           _sendCommandToESP32('exit_scan'); // Send command to ESP32 to exit scan mode
-          connection.finish(); // Finish the connection
           return true; // Allow back navigation
       },
       child: Scaffold(
@@ -110,13 +162,15 @@ class _ScanCardPageState extends State<ScanCardPage> {
                       : () {
                         _sendCommandToESP32('scan'); // Send command to ESP32 to start scanning
                       },
-                    child: Text(isScanning ? 'Scanning...' : 'Scan Card'),
+                    child: Text(isScanning ? 'Scanning...'
+                        : isConnecting? 'Connecting...': 'Scan Card'),
                 ),
               ],
             ),
+>>>>>>> Stashed changes
           ),
         ),
-      )
+      ),
     );
   }
 }

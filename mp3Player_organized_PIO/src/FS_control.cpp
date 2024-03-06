@@ -134,6 +134,7 @@ bool FSControl::addCardToFile(String cardNumber, String folders)
 
 bool FSControl::setCurrentCard(String cardNumber)
 {
+    folderList.clear();
     File file = SPIFFS.open(fileName, FILE_READ);
     if (!file)
     {
@@ -147,9 +148,23 @@ bool FSControl::setCurrentCard(String cardNumber)
         Serial.println("Card number exists in file");
         int folderIndex = fileContent.indexOf(",", index);
         int folderIndexEnd = fileContent.indexOf("\n", folderIndex);
-        folders = fileContent.substring(folderIndex + 1, folderIndexEnd);
+        String folders = fileContent.substring(folderIndex + 1, folderIndexEnd);
         currentFolderIndex = 0;
         Serial.println("Folders: " + folders);
+        size_t pos = 0;
+        String token;
+        while ((pos = folders.indexOf(',')) != -1)
+        {
+            token = folders.substring(0, pos);
+            folderList.push_back(token);
+            folders.remove(0, pos + 1);
+        }
+        folderList.push_back(folders); // Add the last folder
+        Serial.println("Folder list: ");
+        for (int i = 0; i < folderList.size(); i++)
+        {
+            Serial.println(folderList[i]);
+        }
         return true;
     }
     else
@@ -159,25 +174,34 @@ bool FSControl::setCurrentCard(String cardNumber)
     }
 }
 
+int FSControl::getCurrentFolder()
+{
+    return folderList[currentFolderIndex].toInt();
+}
+
 int FSControl::getNextFolder()
 {
-    int commaIndex = folders.indexOf(",", currentFolderIndex);
-    if(commaIndex < 0){
-        commaIndex = folders.length();
-    }
-    int currentFolder = folders.substring(currentFolderIndex, commaIndex).toInt();
-    currentFolderIndex = commaIndex + 1;
-    if(currentFolderIndex >= folders.length()){
+    currentFolderIndex++;
+    if (currentFolderIndex >= folderList.size())
+    {
         currentFolderIndex = 0;
     }
-    return currentFolder;
+    return getCurrentFolder();
 }
 
 int FSControl::getPrevFolder()
 {
-    //for now return first folder always
-    currentFolderIndex = 0;
-    return getNextFolder();
+    currentFolderIndex--;
+    if (currentFolderIndex < 0)
+    {
+        currentFolderIndex = folderList.size() - 1;
+    }
+    return getCurrentFolder();
     
+}
+
+void FSControl::resetFolderIndex()
+{
+    currentFolderIndex = 0;
 }
 

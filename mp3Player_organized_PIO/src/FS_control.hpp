@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <SPIFFS.h>
 #include <FS.h>
+#include <vector>
 
 
 /* You only need to format SPIFFS the first time you run a
@@ -21,14 +22,16 @@ class FSControl
         bool checkCardInFile(String cardNumber);
         bool addCardToFile(String cardNumber, String folders);
         bool setCurrentCard(String cardNumber);
+        int getCurrentFolder();
         int getNextFolder();
         int getPrevFolder();
+        void resetFolderIndex();
     private:
         void writeToFile(String data);
         void appedToFile(String data);
 
         String fileName = "/Cards.txt";
-        String folders ="";
+        std::vector<String> folderList;
         int currentFolderIndex = 0;
 
 };

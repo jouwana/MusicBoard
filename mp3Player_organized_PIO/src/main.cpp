@@ -91,7 +91,6 @@ void setup()
   Serial.begin(9600);
   Serial.setTimeout(10);
   delay (100); // for stability
-
   for (int i = 0; i < NUM_BUTTONS; i++)
   {
     pinMode(pinNumbers[i], INPUT_PULLUP);
@@ -131,10 +130,12 @@ void setup()
   SerialBT.begin(device_name); // Bluetooth device name
   Serial.printf("The device with name \"%s\" is started.\nNow you can pair it with Bluetooth!\n", device_name.c_str());
   delay(100); //for stability
+
 }
 
 void loop()
 {
+
   // if(SD_card_selected)
   // {
   //   movingPixels(0, 0, 255);
@@ -145,6 +146,7 @@ void loop()
   else {
     if (SerialBT.available())
     {
+
       String str = SerialBT.readString();
       if (scanning_mode == STOP_SCAN && str == "scan")
       {
@@ -262,6 +264,7 @@ void loop()
       cardType = handle_reads();
     }
 
+
     if (scanning_mode == SCAN)
     {
       if (cardType == AUTHORIZED || cardType == PREVIOUS)
@@ -274,7 +277,6 @@ void loop()
       else if (cardType == NEW)
       {
         turnOnPixels(0,255,0);
-
         SerialBT.println("new");
         Serial.println("Please write in details for the card");
         scanning_mode = ADD_DETAILS;

@@ -9,14 +9,18 @@ void MP3Commands::stop()
 
 void MP3Commands::play_controls(String str)
 {
-
     if (str == "play")
     {
         playing = true;
         mp3Basic(resume_CMD);
     }
 
-    else if (str == "stop")
+    else if (str == "stop"){
+        playing = false;
+        stop();
+    }
+
+    else if (str == "pause")
     {
         playing = false;
         mp3Basic(pause_CMD);
@@ -24,45 +28,38 @@ void MP3Commands::play_controls(String str)
 
     else if (str == "next")
     {
-        play_filename(folder_number, file_counter);
         nextFile();
+        play_filename(folder_number, file_counter);
     }
 
     else if (str == "prev")
     {
         prevFile();
         play_filename(folder_number, file_counter);
-        nextFile();
     }
 
-    else if (str == "combine")
-    {
-        preset_Combine();
-    }
-
-    else if (str == "vol up")
+    else if (str == "vol_up")
     {
         mp3Basic(volume_up_CMD);
         mp3Basic(volume_up_CMD);
     }
-    else if (str == "vol down")
+    else if (str == "vol_down")
     {
         mp3Basic(volume_down_CMD);
         mp3Basic(volume_down_CMD);
-    }
-
-    if(lastStates == 0 && currentStates == 1){
-        play_filename(folder_number, file_counter);
-        nextFile();
-        playing = true;
     }
 
     // we play here if we use 'start' to begin playing, or if previous song ended and we are in playing mode
     if ((check_MP3_status() == STOPPED && playing) || str == "start")
     {
+        if(str == "start"){
+            folder_number = getCurrentFolder();
+            file_counter = 1;
+        }
+        else{
+            nextFile();
+        }
         play_filename(folder_number, file_counter);
-        // uncomment this code if you want to cycle play a preset number of consecutive files
-        nextFile();
 
         // mp3Basic(next_song_CMD); //cycles through ALL the songs on the file;
         playing = true;
@@ -212,35 +209,6 @@ void MP3Commands::play_Index(uint8_t file)
     delay(20); // required for stability
 }
 
-void MP3Commands::preset_Combine()
-{
-    Serial.print(" playing combination songs: 01/005, 02/001, 01/003 ");
-
-    MP3.write(start_byte);
-    byte msg_len = 0x08;
-    MP3.write(msg_len);
-
-    byte combine_cmd = 0x45;
-    MP3.write(combine_cmd);
-
-    byte dir_ind = 1;
-    MP3.write(dir_ind);
-    byte file_ind = 5;
-    MP3.write(file_ind);
-    dir_ind = 2;
-    MP3.write(dir_ind);
-    file_ind = 1;
-    MP3.write(file_ind);
-    dir_ind = 1;
-    MP3.write(dir_ind);
-    file_ind = 3;
-    MP3.write(file_ind);
-
-    MP3.write(end_byte);
-
-    delay(20); // required for stability
-}
-
 void MP3Commands::sendBytes(uint8_t nbytes)
 {
     for (uint8_t i = 0; i < nbytes; i++) //
@@ -266,7 +234,7 @@ void MP3Commands::nextFolder()
 
 void MP3Commands::prevFile()
 {
-    file_counter -= 2;
+    file_counter -= 1;
     if (file_counter < 1)
     {
         prevFolder();

@@ -9,9 +9,8 @@
 #endif
 
 extern HardwareSerial MP3;
-extern int lastStates;
-extern int currentStates;
 extern int getNextFolder();
+extern int getCurrentFolder();
 extern int getPrevFolder();
 
 class MP3Commands

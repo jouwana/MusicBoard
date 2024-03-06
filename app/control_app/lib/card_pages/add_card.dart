@@ -85,8 +85,10 @@ class _ScanCardPageState extends State<ScanCardPage> {
           isScanning = false; // Toggle isScanning value
           isConnecting = false; // Toggle isConnecting value
         });
-        // If response is null, show an error message
-        _sendCommandToESP32('exit_scan'); // Send command to ESP32 to exit scan mode
+        if(_bluetoothManager.isConnected) {
+          // Send command to ESP32 to exit scan mode
+          _sendCommandToESP32('exit_scan');
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text( 'Error: $response, please try again.'),

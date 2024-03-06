@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+<<<<<<< Updated upstream
+=======
+import 'package:flutter/services.dart';
+import 'card_pages/add_card.dart';
+>>>>>>> Stashed changes
 import 'folder_edit.dart';
 import 'add_folder.dart';
 import 'card_pages/card_stats.dart';
@@ -7,16 +12,32 @@ import 'card_pages/card_setup.dart';
 import 'card_pages/card_profile.dart';
 import 'card_pages/add_card.dart';
 import 'menu.dart';
+import 'Helpers/bluetooth_manager.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter is initialized
   runApp(const MyApp());
+  initializeBluetooth();
+}
+
+void initializeBluetooth() async {
+  BluetoothHelper(); // Create an instance of BluetoothHelper
 }
 
 class MyApp extends StatelessWidget {
+  static const platform = MethodChannel('com.example.app/lifecycle');
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    platform.setMethodCallHandler((call) async {
+      if (call.method == 'onDestroy') {
+        BluetoothHelper.instance.sendCommandToESP32('exit_scan');
+        print('Received onStop event from Android.');
+      }
+    });
+
     return MaterialApp(
       title: 'Your App Title',
       initialRoute: '/adminLogin',

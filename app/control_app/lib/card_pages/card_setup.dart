@@ -5,6 +5,11 @@ class CardSetupPage extends StatelessWidget {
   const CardSetupPage({super.key});
 
   @override
+  void dispose() {
+    // Add dispose method here
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

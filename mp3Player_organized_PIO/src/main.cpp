@@ -157,14 +157,14 @@ void loop()
         turnOnPixels(255,165,0);
       }
 
-      else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str == "exit_scan")
+      else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str.indexOf("exit")>= 0)
       {
         Serial.println("Stopping scanning mode");
         clearNUID();
         scanning_mode = STOP_SCAN;
         turnOffPixels();
       }
-      else if (scanning_mode == ADD_DETAILS && str != "exit_scan" && str != "scan")
+      else if (scanning_mode == ADD_DETAILS && str.indexOf("exit") < 0 && str.indexOf("scan") < 0)
       {
         String folders = str;
         Serial.println("Details are: " + folders);
@@ -235,7 +235,7 @@ void loop()
           else if (i == START_PIN_INDEX && firstClick)
           {
             MP3_controller.play_controls("start");
-            arrButtonCommands[i] = "pause";
+            arrButtonCommands[i] = "play";
             firstClick = false;
           }
           else
@@ -294,6 +294,7 @@ void loop()
 
         authorized_card = true;
         MP3_controller.stop();
+        arrButtonCommands[START_PIN_INDEX] = "start";
         MP3_controller.file_counter = 1;
       }
       else if (cardType == PREVIOUS)

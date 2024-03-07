@@ -89,7 +89,7 @@ class BluetoothHelper {
       // Check if connected after initialization attempt
       if (isConnected) {
         try {
-          final data = await _connection!.input!.first.timeout(Duration(seconds: 15)); // Add a timeout for the response
+          final data = await _connection!.input!.first.timeout(const Duration(seconds: 15)); // Add a timeout for the response
           final dataString = utf8.decode(data);
           final response = dataString.trim();
           return response; // Return response if successful
@@ -104,7 +104,7 @@ class BluetoothHelper {
       } else {
         print('Failed to connect, retrying... Attempt $attempt/$maxAttempts');
         // Optionally, wait a bit before retrying to give some time for the device to become ready
-        await Future.delayed(Duration(seconds: 2));
+        await Future.delayed(const Duration(seconds: 2));
       }
     }
 

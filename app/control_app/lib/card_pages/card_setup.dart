@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'card_mapping.dart';
+import '../Helpers/bluetooth_manager.dart';
 
 class CardSetupPage extends StatelessWidget {
   const CardSetupPage({super.key});
 
   @override
   void dispose() {
-    // Add dispose method here
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop:() async {
+        await BluetoothHelper.instance.sendCommandToESP32('exit_scan');
+        BluetoothHelper.instance.resetConnection();
+        return true;
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: const Text('Card Setup'),
       ),
@@ -26,7 +32,7 @@ class CardSetupPage extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CardMappingPage(callerID: 'addCard'),
+                    builder: (context) => const CardMappingPage(callerID: 'addCard'),
                   ),
                 );
               },
@@ -35,6 +41,7 @@ class CardSetupPage extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

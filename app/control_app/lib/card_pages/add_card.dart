@@ -21,7 +21,7 @@ class _ScanCardPageState extends State<ScanCardPage> {
     _bluetoothManager = BluetoothHelper.instance; // Get BluetoothManager instance
   }
 
-  void _sendCommandToESP32(String command) async {
+  Future<void> _sendCommandToESP32(String command) async {
     setState(() {
       isConnecting = true; // Toggle isConnecting value
     });
@@ -87,11 +87,12 @@ class _ScanCardPageState extends State<ScanCardPage> {
         });
         if(_bluetoothManager.isConnected) {
           // Send command to ESP32 to exit scan mode
-          _sendCommandToESP32('exit_scan');
+          await _sendCommandToESP32('exit_scan');
+          _bluetoothManager.resetConnection(); // Reset Bluetooth connection
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text( 'Error: $response, please try again.'),
+            content: Text( '$response, please try again.'),
             duration: const Duration(seconds: 3),
           ),
         );
@@ -128,7 +129,7 @@ class _ScanCardPageState extends State<ScanCardPage> {
                 ),
                 const SizedBox(height: 40),
                 ElevatedButton(
-                  onPressed: isScanning
+                  onPressed: isScanning || isConnecting
                       ? null
                       : () {
                         _sendCommandToESP32('scan'); // Send command to ESP32 to start scanning

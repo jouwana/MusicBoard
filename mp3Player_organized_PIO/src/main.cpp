@@ -300,6 +300,7 @@ void loop()
         SerialBT.println("new");
         Serial.println("Please write in details for the card");
         scanning_mode = ADD_DETAILS;
+        authorized_card = false;
 
       }
     }

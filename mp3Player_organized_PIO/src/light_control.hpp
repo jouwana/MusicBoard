@@ -5,7 +5,7 @@
 #endif
 
 // How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS 12 // Popular NeoPixel ring size
+#define NUMPIXELS 16 // Popular NeoPixel ring size
 
 // Which pin on the Arduino is connected to the NeoPixels?
 #define PIXEL_PIN 13 // On Trinket or Gemma, suggest changing this to 1
@@ -30,6 +30,34 @@ void movingPixels(int R, int G, int B)
       pixels.setPixelColor(i, pixels.Color(0, 0, 0));
     }
     pixels.setPixelColor(blink_index, pixels.Color(R, G, B));
+    pixels.show();
+    blink_index = (blink_index == (NUMPIXELS - 1)) ? 0 : blink_index + 1;
+  }
+}
+
+void clearPixels()
+{
+  pixels.clear();
+  pixels.show();
+}
+
+void movingPixelsRandom()
+{
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= shortInterval)
+  {
+    for (int i = 0; i < NUMPIXELS; i++)
+    { // For each pixel...
+      // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+      // Here we're using a moderately bright green color:
+          srand(time(NULL)+i);
+      int R = rand() % 256; 
+      int G = rand() % 256; 
+      int B = rand() % 256; 
+      pixels.setPixelColor(i, pixels.Color(R, G, B));
+    }
+
+    pixels.setPixelColor(blink_index, pixels.Color(0, 0, 0));
     pixels.show();
     blink_index = (blink_index == (NUMPIXELS - 1)) ? 0 : blink_index + 1;
   }

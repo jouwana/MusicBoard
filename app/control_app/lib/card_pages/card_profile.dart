@@ -17,6 +17,7 @@ class CardProfilePage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Card Profile'),
+          centerTitle: true,
         ),
         body: Center(
           child: Column(

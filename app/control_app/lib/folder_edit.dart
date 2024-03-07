@@ -11,6 +11,7 @@ class FolderEditPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Folder Edit'),
+        centerTitle: true,
       ),
       body: Center(
         child: SizedBox(

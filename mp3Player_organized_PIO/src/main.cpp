@@ -35,16 +35,17 @@ HardwareSerial MP3(2); // Use UART2 for MP3 player communication
 #define RX 16
 #define TX 17
 #define NUM_BUTTONS 6
-#define START_PIN_INDEX 0
-#define NEXT_PIN_INDEX 1
-#define PREV_PIN_INDEX 2
+#define START_PIN_INDEX 2
+#define NEXT_PIN_INDEX 0
+#define PREV_PIN_INDEX 1
 #define VOL_UP_PIN_INDEX 3
 #define VOL_DOWN_PIN_INDEX 4
 #define STOP_PIN_INDEX 5
+#define START_LED_PIN 27
 
 bool firstClick = true;
 
-int pinNumbers[NUM_BUTTONS] = {12, 14, 27, 26, 25, 33};
+int pinNumbers[NUM_BUTTONS] = {12, 14, 26, 25, 33, 32};
 int arrlastStates[NUM_BUTTONS] = {1, 1, 1, 1, 1, 1};
 int arrcurrentStates[NUM_BUTTONS] = {1, 1, 1, 1, 1, 1};
 String arrButtonCommands[NUM_BUTTONS] = {"start", "next", "prev", "vol_up", "vol_down", "stop"};
@@ -96,6 +97,8 @@ void setup()
     pinMode(pinNumbers[i], INPUT_PULLUP);
   }
 
+  pinMode(START_LED_PIN, OUTPUT);
+
   SPI.begin();     // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522
 
@@ -131,6 +134,7 @@ void setup()
   Serial.printf("The device with name \"%s\" is started.\nNow you can pair it with Bluetooth!\n", device_name.c_str());
   delay(100); //for stability
 
+  clearPixels();
 }
 
 void loop()
@@ -154,6 +158,9 @@ void loop()
         Serial.println("Please scan the card");
         clearNUID();
         scanning_mode = SCAN;
+        arrButtonCommands[START_PIN_INDEX] = "start";
+        firstClick = true;
+        digitalWrite(START_LED_PIN, LOW);
         turnOnPixels(255,165,0);
       }
 
@@ -214,6 +221,10 @@ void loop()
       }
     }
 
+    if(scanning_mode == STOP_SCAN && arrButtonCommands[START_PIN_INDEX] == "pause")
+    {
+      movingPixelsRandom();
+    }
 
     if (authorized_card)
     {
@@ -227,15 +238,21 @@ void loop()
           if (i == START_PIN_INDEX && !firstClick)
           {
             MP3_controller.play_controls(arrButtonCommands[i]);
-            if (arrButtonCommands[i] == "play")
+            if (arrButtonCommands[i] == "play"){
               arrButtonCommands[i] = "pause";
-            else if (arrButtonCommands[i] == "pause")
+              digitalWrite(START_LED_PIN, HIGH);
+            }
+            else if (arrButtonCommands[i] == "pause"){
               arrButtonCommands[i] = "play";
+              digitalWrite(START_LED_PIN, LOW);
+              clearPixels();
+            }
           }
           else if (i == START_PIN_INDEX && firstClick)
           {
             MP3_controller.play_controls("start");
-            arrButtonCommands[i] = "play";
+            arrButtonCommands[i] = "pause";
+            digitalWrite(START_LED_PIN, HIGH);
             firstClick = false;
           }
           else
@@ -245,6 +262,9 @@ void loop()
           if (i == STOP_PIN_INDEX)
           {
             firstClick = true;
+            arrButtonCommands[START_PIN_INDEX] = "start";
+            digitalWrite(START_LED_PIN, LOW);
+            clearPixels();
             FSC.resetFolderIndex();
           }
         }
@@ -294,7 +314,10 @@ void loop()
 
         authorized_card = true;
         MP3_controller.stop();
+        clearPixels();
         arrButtonCommands[START_PIN_INDEX] = "start";
+        firstClick=true;
+        digitalWrite(START_LED_PIN, LOW);
         MP3_controller.file_counter = 1;
       }
       else if (cardType == PREVIOUS)
@@ -304,6 +327,12 @@ void loop()
       else if (cardType == NEW)
       {
         turnOnPixels(255,0,0);
+        delay(300);
+        authorized_card = false;
+        MP3_controller.stop();
+        clearPixels();
+        arrButtonCommands[START_PIN_INDEX] = "start";
+        digitalWrite(START_LED_PIN, LOW);
         Serial.println(F("this card is not in file, please register it."));
         clearNUID();
       }

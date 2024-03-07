@@ -20,6 +20,7 @@ class CardSetupPage extends StatelessWidget {
       child: Scaffold(
       appBar: AppBar(
         title: const Text('Card Setup'),
+        centerTitle: true,
       ),
       body: Center(
         child: Column(

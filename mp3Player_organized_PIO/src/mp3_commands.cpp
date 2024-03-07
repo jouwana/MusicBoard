@@ -26,13 +26,13 @@ void MP3Commands::play_controls(String str)
         mp3Basic(pause_CMD);
     }
 
-    else if (str == "next")
+    else if (str == "next" && playing)
     {
         nextFile();
         play_filename(folder_number, file_counter);
     }
 
-    else if (str == "prev")
+    else if (str == "prev" && playing)
     {
         prevFile();
         play_filename(folder_number, file_counter);

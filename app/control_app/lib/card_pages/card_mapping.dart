@@ -12,7 +12,6 @@ class CardMappingPage extends StatefulWidget {
 
 class _CardMappingPageState extends State<CardMappingPage> {
   final TextEditingController _folderController = TextEditingController();
-  List<String> folders = [];
   bool isButtonEnabled = false;
 
   @override
@@ -35,24 +34,25 @@ class _CardMappingPageState extends State<CardMappingPage> {
                 'Please enter the folder numbers for this card \n\n',
                 textAlign: TextAlign.center,
               ),
-              TextField(
+              TextFormField(
                 controller: _folderController,
                 decoration: const InputDecoration(
-                  labelText: 'Add a Folder Number',
+                  labelText: 'Add Your Folders: 1,2,3',
                 ),
-                keyboardType: TextInputType.number,
-                onSubmitted: (value) {
-                  _validateAndAddFolder();
+                keyboardType: TextInputType.text,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9,]')), // Allow only digits and commas
+                  _UniqueCommaFormatter(),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    isButtonEnabled = value.isNotEmpty;
+                  });
                 },
               ),
               const SizedBox(height: 20),
-              Text(
-                folders.isEmpty ? '' : 'Folders: ${folders.join(', ')}',
-                style: const TextStyle(fontSize: 18),
-              ),
-              const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: folders.isNotEmpty ? _sendFoldersToESP32 : null,
+                onPressed: isButtonEnabled ? _validateAndSendToESP32 : null,
                 child: const Text('Continue'),
               ),
             ],
@@ -62,57 +62,53 @@ class _CardMappingPageState extends State<CardMappingPage> {
     );
   }
 
-  void _validateAndAddFolder() {
+  void _validateAndSendToESP32() async {
     String input = _folderController.text.trim();
-    if (input.isNotEmpty && int.tryParse(input) != null) {
-      folders.add(input);
-      _folderController.clear();
-      setState(() {
-        isButtonEnabled = folders.isNotEmpty; // Enable/disable button based on folders list
-      });
+    if (_isValidInput(input)) {
+      bool success = await BluetoothHelper.instance.sendCommandToESP32(input);
+      if (!success) {
+        _showErrorDialog('Failed to send folders to ESP32.');
+        return;
+      }
+      _navigateToNextScreen();
     } else {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: Text('Invalid Input'),
-          content: Text('Please enter a valid folder number.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK'),
-            ),
-          ],
-        ),
-      );
+      _showErrorDialog('Invalid input format, please abide by the example.');
     }
   }
 
-  void _sendFoldersToESP32() async {
-    // Send folders to ESP32
-      bool success = await BluetoothHelper.instance.sendCommandToESP32(folders.join(','));
-      if (!success) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to send folders to ESP32.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('OK'),
-              ),
-            ],
-          ),
-        );
-        return;
-
+  bool _isValidInput(String input) {
+    // Check if input is empty or starts/ends with comma
+    if (input.isEmpty || input.startsWith(',') || input.endsWith(',')) {
+      return false;
     }
 
-    // Navigate to the desired screen
+    // Check if two commas appear consecutively
+    if (input.contains(',,') || input.endsWith(',')) {
+      return false;
+    }
+
+    return true;
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Error'),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToNextScreen() {
     if (widget.callerID == 'addCard') {
       Navigator.pushNamed(context, '/menu');
     } else if (widget.callerID == 'cardProfile') {
@@ -124,5 +120,17 @@ class _CardMappingPageState extends State<CardMappingPage> {
   void dispose() {
     _folderController.dispose();
     super.dispose();
+  }
+}
+
+class _UniqueCommaFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Prevent two commas in a row without a number in between
+    if (newValue.text.endsWith(',,') && !newValue.text.endsWith(',,,')) {
+      return oldValue;
+    }
+    return newValue;
   }
 }

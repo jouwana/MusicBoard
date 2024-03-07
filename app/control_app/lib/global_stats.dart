@@ -8,6 +8,7 @@ class GlobalStatisticsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Global Statistics'),
+        centerTitle: true,
       ),
       body: const Center(
         child: Text(

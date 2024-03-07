@@ -156,7 +156,8 @@ bool FSControl::setCurrentCard(String cardNumber)
         while ((pos = folders.indexOf(',')) != -1)
         {
             token = folders.substring(0, pos);
-            folderList.push_back(token);
+            if(token.toInt() <= 4)
+                folderList.push_back(token);
             folders.remove(0, pos + 1);
         }
         folderList.push_back(folders); // Add the last folder

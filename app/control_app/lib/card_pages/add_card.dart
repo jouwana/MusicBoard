@@ -115,6 +115,7 @@ class _ScanCardPageState extends State<ScanCardPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Add Card'),
+          centerTitle: true,
         ),
         body: Center(
           child: SizedBox(

@@ -10,6 +10,7 @@ class AddFolderPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Folder'),
+        centerTitle: true,
       ),
       body: Center(
         child: SizedBox(

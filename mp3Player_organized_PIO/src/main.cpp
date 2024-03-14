@@ -114,12 +114,13 @@ void setup()
 
   MP3_controller.select_SD_card(); // ALWAYS select SD card at beginning
   delay(1200);                     // indexing the files on your SD card will take at least 1 second. let the operation finish in the background before trying to play a file.
-  MP3_controller.set_volume(8);
+  MP3_controller.set_volume(15);
 
   SerialBT.begin(device_name); // Bluetooth device name
   Serial.printf("The device with name \"%s\" is started.\nNow you can pair it with Bluetooth!\n", device_name.c_str());
   delay(100); //for stability
 
+  pixels.setBrightness(20);
   clearPixels();
 }
 

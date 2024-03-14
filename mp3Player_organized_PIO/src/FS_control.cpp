@@ -136,6 +136,7 @@ bool FSControl::setCurrentCard(String cardNumber)
 {
     folderList.clear();
     folderSize.clear();
+    resetFolderIndex();
     File file = SPIFFS.open(fileName, FILE_READ);
     if (!file)
     {

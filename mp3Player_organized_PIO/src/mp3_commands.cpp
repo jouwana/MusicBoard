@@ -119,6 +119,17 @@ MP3Commands::MP3_status MP3Commands::check_MP3_status()
                 no_file = true;
                 return (STOPPED);
             }
+            else if (receivedData[dataIndex - 3] == 0x3B && receivedData[dataIndex - 4] == 0x04){ //len 5 && removed SD card
+                Serial.println(" SD REMOVED");
+                dataIndex = 0;
+                handleSDRemoved();
+                return (SD_REMOVED);
+            }
+            else if (receivedData[dataIndex - 3] == 0x3A && receivedData[dataIndex - 4] == 0x04){ //len 5 && inserted SD card
+                Serial.println(" SD INSERTED");
+                dataIndex = 0;
+                return (SD_INSERTED);
+            }
                 else if (receivedData[dataIndex - 1] == 0x00 && receivedData[dataIndex - 2] == 0x31)
                 { // 7E20EF7E3101EF - status reply - currently playing
                     Serial.println(" STATUS REPLY - IDLE");
@@ -275,5 +286,13 @@ void MP3Commands::prevFolder()
     {
         folder_number = FSC.getPrevFolder();
         counter--;
+    }
+}
+
+void MP3Commands::clearBuffer()
+{
+    while(MP3.available())
+    {
+        MP3.read();
     }
 }

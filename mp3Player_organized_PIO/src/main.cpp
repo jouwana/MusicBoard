@@ -72,6 +72,11 @@ SCANTYPE scanning_mode = STOP_SCAN;
 String device_name = "ESP32";
 BluetoothSerial SerialBT;
 
+void handleSDRemoved(){
+  authorized_card = false;
+  clearNUID();
+}
+
 void setup()
 {
   // Initiate the serial monitor.
@@ -141,6 +146,7 @@ void loop()
       String str = SerialBT.readString();
       if (scanning_mode == STOP_SCAN && str == "scan")
       {
+        authorized_card = false;
         MP3_controller.stop();
         Serial.println("Please scan the card");
         clearNUID();
@@ -302,6 +308,7 @@ void loop()
 
         authorized_card = true;
         MP3_controller.stop();
+        MP3_controller.clearBuffer();
         clearPixels();
         arrButtonCommands[START_PIN_INDEX] = "start";
         firstClick=true;

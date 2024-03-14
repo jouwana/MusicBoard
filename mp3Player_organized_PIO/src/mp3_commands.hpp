@@ -4,8 +4,11 @@
 #include <HardwareSerial.h>
 
 
+
 extern HardwareSerial MP3;
 extern FSControl FSC;
+extern void handleSDRemoved();
+
 
 class MP3Commands
 {
@@ -51,7 +54,9 @@ public: // Define the Serial MP3 Player Module.
         STOPPED,
         IDLE,
         PLAYING,
-        NODATA
+        NODATA,
+        SD_REMOVED,
+        SD_INSERTED
     };
 
     bool playing = false;
@@ -67,10 +72,10 @@ public: // Define the Serial MP3 Player Module.
     void set_volume(byte volume);
     void play_filename(uint8_t directory, uint8_t file);
     void play_Index(uint8_t file);
-    void preset_Combine();
     void sendBytes(uint8_t nbytes);
     void nextFile();
     void nextFolder();
     void prevFile();
     void prevFolder();
+    void clearBuffer();
 };

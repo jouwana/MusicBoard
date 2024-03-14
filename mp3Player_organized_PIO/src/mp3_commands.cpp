@@ -51,7 +51,7 @@ void MP3Commands::play_controls(String str)
     }
 
     // we play here if we use 'start' to begin playing, or if previous song ended and we are in playing mode
-    if ((check_MP3_status() == STOPPED && playing) || str == "start")
+    if ((status == STOPPED && playing) || str == "start")
     {
         if(no_file){
             no_file = false;
@@ -84,7 +84,7 @@ void MP3Commands::mp3Basic(uint8_t command)
     sendBytes(4);
 }
 
-MP3Commands::MP3_status MP3Commands::check_MP3_status()
+MP3_status MP3Commands::check_MP3_status()
 {
     if (MP3.available())
     { // should not be a while loop, but a if loop. but MP3 sends very little data, so it should be fine
@@ -122,7 +122,6 @@ MP3Commands::MP3_status MP3Commands::check_MP3_status()
             else if (receivedData[dataIndex - 3] == 0x3B && receivedData[dataIndex - 4] == 0x04){ //len 5 && removed SD card
                 Serial.println(" SD REMOVED");
                 dataIndex = 0;
-                handleSDRemoved();
                 return (SD_REMOVED);
             }
             else if (receivedData[dataIndex - 3] == 0x3A && receivedData[dataIndex - 4] == 0x04){ //len 5 && inserted SD card
@@ -296,3 +295,4 @@ void MP3Commands::clearBuffer()
         MP3.read();
     }
 }
+

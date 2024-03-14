@@ -72,10 +72,12 @@ SCANTYPE scanning_mode = STOP_SCAN;
 String device_name = "ESP32";
 BluetoothSerial SerialBT;
 
-void handleSDRemoved(){
-  authorized_card = false;
-  clearNUID();
-}
+MP3_status status;
+bool sd_removed = true;
+
+void handleControl();
+
+void resetController();
 
 void setup()
 {
@@ -119,6 +121,7 @@ void setup()
 
   MP3_controller.select_SD_card(); // ALWAYS select SD card at beginning
   delay(1200);                     // indexing the files on your SD card will take at least 1 second. let the operation finish in the background before trying to play a file.
+  
   MP3_controller.set_volume(15);
 
   SerialBT.begin(device_name); // Bluetooth device name
@@ -131,206 +134,214 @@ void setup()
 
 void loop()
 {
+  status = MP3_controller.check_MP3_status();
+  if(status == SD_REMOVED){
+    resetController();
+    authorized_card = false;
+    firstClick = true;
+    sd_removed = true;
+  }
+  if(status == SD_INSERTED){
+    clearPixels();
+    sd_removed = false;
+  }
+  if(sd_removed && scanning_mode == STOP_SCAN){
+    movingPixels(0,0,255);
+  }
+  handleControl();
+}
 
-  // if(SD_card_selected)
-  // {
-  //   movingPixels(0, 0, 255);
-  //   SD_card_selected = MP3_controller.reset_mp3();
-  //   delay(100); // stability
-  // }
+void handleControl(){
+  if (SerialBT.available())
+  {
 
-  //else {
-    if (SerialBT.available())
+    String str = SerialBT.readString();
+    if (scanning_mode == STOP_SCAN && str == "scan")
     {
-
-      String str = SerialBT.readString();
-      if (scanning_mode == STOP_SCAN && str == "scan")
-      {
-        authorized_card = false;
-        MP3_controller.stop();
-        Serial.println("Please scan the card");
-        clearNUID();
-        scanning_mode = SCAN;
-        arrButtonCommands[START_PIN_INDEX] = "start";
-        firstClick = true;
-        digitalWrite(START_LED_PIN, LOW);
-        turnOnPixels(255,165,0);
-      }
-
-      else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str.indexOf("exit")>= 0)
-      {
-        Serial.println("Stopping scanning mode");
-        clearNUID();
-        scanning_mode = STOP_SCAN;
-        turnOffPixels();
-      }
-      else if (scanning_mode == ADD_DETAILS && str.indexOf("exit") < 0 && str.indexOf("scan") < 0)
-      {
-        String folders = str;
-        Serial.println("Details are: " + folders);
-        FSC.addCardToFile(getLastCard(), folders);
-        scanning_mode = STOP_SCAN;
-        turnOnPixels(0,255,0);
-        clearNUID();
-      }
+      authorized_card = false;
+      resetController();
+      Serial.println("Please scan the card");
+      firstClick = true;
+      turnOnPixels(255, 165, 0);
     }
 
-    if (Serial.available() > 0)
+    else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str.indexOf("exit") >= 0)
     {
-      String str = Serial.readString();
-      
-      if (str == "read")
-      {
-        FSC.readFile();
-      }
-      else if (str == "clear")
-      {
-        FSC.clearFile();
-      }
-      else if (scanning_mode == STOP_SCAN && str == "scan")
-      {
-        MP3_controller.stop();
-        Serial.println("Please scan the card");
-        clearNUID();
-        scanning_mode = SCAN;
-        turnOnPixels(255,165,0);
-      }
+      Serial.println("Stopping scanning mode");
+      clearNUID();
+      scanning_mode = STOP_SCAN;
+      turnOffPixels();
+    }
+    else if (scanning_mode == ADD_DETAILS && str.indexOf("exit") < 0 && str.indexOf("scan") < 0)
+    {
+      String folders = str;
+      Serial.println("Details are: " + folders);
+      FSC.addCardToFile(getLastCard(), folders);
+      scanning_mode = STOP_SCAN;
+      turnOnPixels(0, 255, 0);
+      clearNUID();
+    }
+  }
 
-      else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str == "exit_scan")
-      {
-        Serial.println("Stopping scanning mode");
-        clearNUID();
-        scanning_mode = STOP_SCAN;
-        turnOffPixels();
-      }
-      else if (scanning_mode == ADD_DETAILS && str != "exit_scan" && str != "scan")
-      {
-        String folders = str;
-        Serial.println("Details are: " + folders);
-        FSC.addCardToFile(getLastCard(), folders);
-        scanning_mode = STOP_SCAN;
-        turnOnPixels(0,255,0);
-        clearNUID();
-      }
+  if (Serial.available() > 0)
+  {
+    String str = Serial.readString();
+
+    if (str == "read")
+    {
+      FSC.readFile();
+    }
+    else if (str == "clear")
+    {
+      FSC.clearFile();
+    }
+    else if (scanning_mode == STOP_SCAN && str == "scan")
+    {
+      resetController();
+      scanning_mode = SCAN;
+      authorized_card = false;
+      firstClick = true;
+      Serial.println("Please scan the card");
+      turnOnPixels(255, 165, 0);
     }
 
-    if(scanning_mode == STOP_SCAN && arrButtonCommands[START_PIN_INDEX] == "pause")
+    else if ((scanning_mode == SCAN || scanning_mode == ADD_DETAILS) && str == "exit_scan")
     {
-      movingPixelsRandom();
+      Serial.println("Stopping scanning mode");
+      clearNUID();
+      scanning_mode = STOP_SCAN;
+      turnOffPixels();
     }
-
-    if (authorized_card)
+    else if (scanning_mode == ADD_DETAILS && str != "exit_scan" && str != "scan")
     {
-      for (int i = 0; i < NUM_BUTTONS; i++)
+      String folders = str;
+      Serial.println("Details are: " + folders);
+      FSC.addCardToFile(getLastCard(), folders);
+      scanning_mode = STOP_SCAN;
+      turnOnPixels(0, 255, 0);
+      clearNUID();
+    }
+  }
+
+  if (scanning_mode == STOP_SCAN && arrButtonCommands[START_PIN_INDEX] == "pause")
+  {
+    movingPixelsRandom();
+  }
+
+  if (authorized_card && !sd_removed)
+  {
+    for (int i = 0; i < NUM_BUTTONS; i++)
+    {
+      arrlastStates[i] = arrcurrentStates[i];
+      arrcurrentStates[i] = digitalRead(pinNumbers[i]);
+      if (arrlastStates[i] == 0 && arrcurrentStates[i] == 1)
       {
-        arrlastStates[i] = arrcurrentStates[i];
-        arrcurrentStates[i] = digitalRead(pinNumbers[i]);
-        if (arrlastStates[i] == 0 && arrcurrentStates[i] == 1)
+        Serial.println("Button " + arrButtonCommands[i] + " pressed");
+        if (i == START_PIN_INDEX && !firstClick)
         {
-          Serial.println("Button " + arrButtonCommands[i] + " pressed");
-          if (i == START_PIN_INDEX && !firstClick)
+          MP3_controller.play_controls(arrButtonCommands[i]);
+          if (arrButtonCommands[i] == "play")
           {
-            MP3_controller.play_controls(arrButtonCommands[i]);
-            if (arrButtonCommands[i] == "play"){
-              arrButtonCommands[i] = "pause";
-              digitalWrite(START_LED_PIN, HIGH);
-            }
-            else if (arrButtonCommands[i] == "pause"){
-              arrButtonCommands[i] = "play";
-              digitalWrite(START_LED_PIN, LOW);
-              clearPixels();
-            }
-          }
-          else if (i == START_PIN_INDEX && firstClick)
-          {
-            MP3_controller.play_controls("start");
             arrButtonCommands[i] = "pause";
             digitalWrite(START_LED_PIN, HIGH);
-            firstClick = false;
           }
-          else
+          else if (arrButtonCommands[i] == "pause")
           {
-            MP3_controller.play_controls(arrButtonCommands[i]);
-          }
-          if (i == STOP_PIN_INDEX)
-          {
-            firstClick = true;
-            arrButtonCommands[START_PIN_INDEX] = "start";
+            arrButtonCommands[i] = "play";
             digitalWrite(START_LED_PIN, LOW);
             clearPixels();
-            FSC.resetFolderIndex();
           }
         }
+        else if (i == START_PIN_INDEX && firstClick)
+        {
+          MP3_controller.play_controls("start");
+          arrButtonCommands[i] = "pause";
+          digitalWrite(START_LED_PIN, HIGH);
+          firstClick = false;
+        }
+        else
+        {
+          MP3_controller.play_controls(arrButtonCommands[i]);
+        }
+        if (i == STOP_PIN_INDEX)
+        {
+          firstClick = true;
+          arrButtonCommands[START_PIN_INDEX] = "start";
+          digitalWrite(START_LED_PIN, LOW);
+          clearPixels();
+          FSC.resetFolderIndex();
+        }
       }
-      MP3_controller.play_controls("");
     }
+    MP3_controller.play_controls("");
+  }
 
-    if (lightsOn)
+  if (lightsOn)
+  {
+    turnOffPixels(scanning_mode == STOP_SCAN ? false : true);
+  }
+  // Look for new cards
+  CARDTYPE cardType = NO_CARD;
+
+  if (scanning_mode != ADD_DETAILS)
+  {
+    cardType = handle_reads();
+  }
+
+  if (scanning_mode == SCAN)
+  {
+    if (cardType == AUTHORIZED || cardType == PREVIOUS)
     {
-      turnOffPixels(scanning_mode == STOP_SCAN ? false : true);
+      SerialBT.println("Card Already Exists in System");
+      Serial.println("card already exists in system");
+      Serial.println("Please scan another card OR exit scan mode");
+      turnOnPixels(255, 150, 203); // bluey green?
     }
-    // Look for new cards
-    CARDTYPE cardType = NO_CARD;
-
-    if (scanning_mode != ADD_DETAILS)
+    else if (cardType == NEW)
     {
-      cardType = handle_reads();
+      turnOnPixels(0, 255, 0);
+      SerialBT.println("new");
+      Serial.println("Please write in details for the card");
+      scanning_mode = ADD_DETAILS;
+      authorized_card = false;
     }
+  }
 
-
-    if (scanning_mode == SCAN)
+  else if (scanning_mode == STOP_SCAN)
+  {
+    if (cardType == AUTHORIZED)
     {
-      if (cardType == AUTHORIZED || cardType == PREVIOUS)
-      {
-        SerialBT.println("Card Already Exists in System");
-        Serial.println("card already exists in system");
-        Serial.println("Please scan another card OR exit scan mode");
-        turnOnPixels(255,150,203); //bluey green?
-      }
-      else if (cardType == NEW)
-      {
-        turnOnPixels(0,255,0);
-        SerialBT.println("new");
-        Serial.println("Please write in details for the card");
-        scanning_mode = ADD_DETAILS;
-        authorized_card = false;
+      turnOnPixels(0, 255, 0);
+      FSC.setCurrentCard(getLastCard());
+      MP3_controller.folder_number = FSC.getCurrentFolder();
 
-      }
+      authorized_card = true;
+      resetController();
+      firstClick = true;
     }
-
-    else if (scanning_mode == STOP_SCAN)
+    else if (cardType == PREVIOUS)
     {
-      if (cardType == AUTHORIZED)
-      {
-        turnOnPixels(0,255,0);
-        FSC.setCurrentCard(getLastCard());
-        MP3_controller.folder_number = FSC.getCurrentFolder();
-
-        authorized_card = true;
-        MP3_controller.stop();
-        MP3_controller.clearBuffer();
-        clearPixels();
-        arrButtonCommands[START_PIN_INDEX] = "start";
-        firstClick=true;
-        digitalWrite(START_LED_PIN, LOW);
-        MP3_controller.file_counter = 1;
-      }
-      else if (cardType == PREVIOUS)
-      {
-        turnOnPixels(255,95,95);
-      }
-      else if (cardType == NEW)
-      {
-        turnOnPixels(255,0,0);
-        delay(300);
-        authorized_card = false;
-        MP3_controller.stop();
-        clearPixels();
-        arrButtonCommands[START_PIN_INDEX] = "start";
-        digitalWrite(START_LED_PIN, LOW);
-        Serial.println(F("this card is not in file, please register it."));
-        clearNUID();
-      }
+      turnOnPixels(255, 95, 95);
     }
-  //}
+    else if (cardType == NEW)
+    {
+      turnOnPixels(255, 0, 0);
+      delay(300);
+      authorized_card = false;
+      resetController();
+      Serial.println(F("this card is not in file, please register it."));
+
+    }
+  }
+}
+
+void resetController()
+{
+  MP3_controller.stop();
+  MP3_controller.clearBuffer();
+  clearNUID();
+  arrButtonCommands[START_PIN_INDEX] = "start";
+  digitalWrite(START_LED_PIN, LOW);
+  MP3_controller.file_counter = 1;
+  clearPixels();
 }

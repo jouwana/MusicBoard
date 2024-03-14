@@ -51,7 +51,7 @@ void movingPixelsRandom()
     { // For each pixel...
       // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
       // Here we're using a moderately bright green color:
-          srand(time(NULL)+i);
+          srand(time(NULL)+i/NUMPIXELS);
       int R = rand() % 256; 
       int G = rand() % 256; 
       int B = rand() % 256; 

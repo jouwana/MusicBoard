@@ -135,6 +135,7 @@ bool FSControl::addCardToFile(String cardNumber, String folders)
 bool FSControl::setCurrentCard(String cardNumber)
 {
     folderList.clear();
+    folderSize.clear();
     File file = SPIFFS.open(fileName, FILE_READ);
     if (!file)
     {
@@ -156,8 +157,7 @@ bool FSControl::setCurrentCard(String cardNumber)
         while ((pos = folders.indexOf(',')) != -1)
         {
             token = folders.substring(0, pos);
-            if(token.toInt() <= 4)
-                folderList.push_back(token);
+            folderList.push_back(token);
             folders.remove(0, pos + 1);
         }
         folderList.push_back(folders); // Add the last folder
@@ -165,6 +165,11 @@ bool FSControl::setCurrentCard(String cardNumber)
         for (int i = 0; i < folderList.size(); i++)
         {
             Serial.println(folderList[i]);
+        }
+        //initialize a folder size list to -1
+        for (int i = 0; i < folderList.size(); i++)
+        {
+            folderSize.push_back(-1);
         }
         return true;
     }
@@ -206,3 +211,17 @@ void FSControl::resetFolderIndex()
     currentFolderIndex = 0;
 }
 
+void FSControl::setCurrentFolderSize(int size)
+{
+    folderSize[currentFolderIndex] = size;
+}
+
+int FSControl::getCurrentFolderSize()
+{
+    return folderSize[currentFolderIndex];
+}
+
+int FSControl::getNumberOfMappedFolders()
+{
+    return folderList.size();
+}

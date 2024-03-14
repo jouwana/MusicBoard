@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "mp3_commands.hpp"
 
+
 void MP3Commands::stop()
 {
     playing = false;
@@ -52,8 +53,14 @@ void MP3Commands::play_controls(String str)
     // we play here if we use 'start' to begin playing, or if previous song ended and we are in playing mode
     if ((check_MP3_status() == STOPPED && playing) || str == "start")
     {
-        if(str == "start"){
-            folder_number = getCurrentFolder();
+        if(no_file){
+            no_file = false;
+            FSC.setCurrentFolderSize(file_counter-1);
+            nextFolder();
+            file_counter = 1;
+        }
+        else if(str == "start"){
+            folder_number = FSC.getCurrentFolder();
             file_counter = 1;
         }
         else{
@@ -105,20 +112,27 @@ MP3Commands::MP3_status MP3Commands::check_MP3_status()
                     return (STOPPED);
                 }
             }
-            else if (receivedData[dataIndex - 1] == 0x00 && receivedData[dataIndex - 2] == 0x31)
-            { // 7E20EF7E3101EF - status reply - currently playing
-                Serial.println(" STATUS REPLY - IDLE");
-                dataIndex = 0;
-                return (IDLE);
+            else if (receivedData[dataIndex - 1] == 0x06 && receivedData[dataIndex - 2] == 0x40 && receivedData[dataIndex - 3] == 0x03)
+            { ////7E.3.40.6.EF File doesn not exist, return STOPPED
+                Serial.println("assume i am playing non existent file");
+                Serial.println(" STOP MSG #3");
+                no_file = true;
+                return (STOPPED);
             }
-            else if (receivedData[dataIndex - 1] == 0x01 && receivedData[dataIndex - 2] == 0x31)
-            { // 7E20EF7E3101EF - status reply - currently playing
-                Serial.println(" STATUS REPLY - PLAYING");
+                else if (receivedData[dataIndex - 1] == 0x00 && receivedData[dataIndex - 2] == 0x31)
+                { // 7E20EF7E3101EF - status reply - currently playing
+                    Serial.println(" STATUS REPLY - IDLE");
+                    dataIndex = 0;
+                    return (IDLE);
+                }
+                else if (receivedData[dataIndex - 1] == 0x01 && receivedData[dataIndex - 2] == 0x31)
+                { // 7E20EF7E3101EF - status reply - currently playing
+                    Serial.println(" STATUS REPLY - PLAYING");
+                    dataIndex = 0;
+                    return (PLAYING);
+                }
                 dataIndex = 0;
-                return (PLAYING);
             }
-            dataIndex = 0;
-        }
         else
         {
             dataIndex++;
@@ -219,9 +233,9 @@ void MP3Commands::sendBytes(uint8_t nbytes)
 
 void MP3Commands::nextFile()
 {
-    file_counter++;
-    if (file_counter > 4)
-    {
+    if(FSC.getCurrentFolderSize() > file_counter || FSC.getCurrentFolderSize() == -1)
+        file_counter++;
+    else{
         nextFolder();
         file_counter = 1;
     }
@@ -229,20 +243,37 @@ void MP3Commands::nextFile()
 
 void MP3Commands::nextFolder()
 {
-    folder_number = getNextFolder();
+    folder_number = FSC.getNextFolder();
+    int counter = FSC.getNumberOfMappedFolders();
+    while (counter && FSC.getCurrentFolderSize() == 0)
+    {
+        folder_number = FSC.getNextFolder();
+        counter--;
+    }
 }
 
 void MP3Commands::prevFile()
 {
-    file_counter -= 1;
+    file_counter = file_counter < 1? 0 : file_counter - 1;
     if (file_counter < 1)
     {
         prevFolder();
-        file_counter = 4;
+        int tempSize = FSC.getCurrentFolderSize();
+        if(tempSize == -1)
+            file_counter = 0;
+        else
+            file_counter = tempSize;
     }
+    file_counter = file_counter < 1 ? 1 : file_counter;
 }
 
 void MP3Commands::prevFolder()
 {
-    folder_number = getPrevFolder();
+    folder_number = FSC.getPrevFolder();
+    int counter = FSC.getNumberOfMappedFolders();
+    while (counter && FSC.getCurrentFolderSize() == 0)
+    {
+        folder_number = FSC.getPrevFolder();
+        counter--;
+    }
 }

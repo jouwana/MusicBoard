@@ -1,17 +1,11 @@
-#ifndef MP3_COMMANDS_H
-#define MP3_COMMANDS_H
-#endif
-
+#pragma once
 #include <Arduino.h>
-// Include necessary libraries here
-#ifndef HardwareSerial_h
+#include "FS_control.hpp"
 #include <HardwareSerial.h>
-#endif
+
 
 extern HardwareSerial MP3;
-extern int getNextFolder();
-extern int getCurrentFolder();
-extern int getPrevFolder();
+extern FSControl FSC;
 
 class MP3Commands
 {
@@ -37,6 +31,8 @@ private:
     uint8_t Send_buf[6] = {0};
     char receivedData[20]; // buffer for storing incoming data
     int dataIndex = 0;     // index for storing incoming data
+
+    bool no_file = false;
 
 public: // Define the Serial MP3 Player Module.
     MP3Commands(uint8_t RX, uint8_t TX)

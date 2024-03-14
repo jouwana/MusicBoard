@@ -1,4 +1,4 @@
-#define FS_CONTROL_HPP
+#pragma once
 #include <Arduino.h>
 #include <SPIFFS.h>
 #include <FS.h>
@@ -22,16 +22,20 @@ class FSControl
         bool checkCardInFile(String cardNumber);
         bool addCardToFile(String cardNumber, String folders);
         bool setCurrentCard(String cardNumber);
+        void resetFolderIndex();
         int getCurrentFolder();
         int getNextFolder();
         int getPrevFolder();
-        void resetFolderIndex();
+        void setCurrentFolderSize(int size);
+        int getCurrentFolderSize();
+        int getNumberOfMappedFolders();
     private:
         void writeToFile(String data);
         void appedToFile(String data);
 
         String fileName = "/Cards.txt";
         std::vector<String> folderList;
+        std::vector<int> folderSize;
         int currentFolderIndex = 0;
 
 };

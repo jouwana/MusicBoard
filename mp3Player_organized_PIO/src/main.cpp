@@ -48,26 +48,12 @@ bool firstClick = true;
 int pinNumbers[NUM_BUTTONS] = {12, 14, 26, 25, 33, 32};
 int arrlastStates[NUM_BUTTONS] = {1, 1, 1, 1, 1, 1};
 int arrcurrentStates[NUM_BUTTONS] = {1, 1, 1, 1, 1, 1};
-String arrButtonCommands[NUM_BUTTONS] = {"start", "next", "prev", "vol_up", "vol_down", "stop"};
+String arrButtonCommands[NUM_BUTTONS] = {"next", "prev", "start", "vol_up", "vol_down", "stop"};
 // we will use pins 12,14,27,26,25,32,33 for the buttons
 
 MP3Commands MP3_controller = MP3Commands(RX, TX);
 FSControl FSC;
 
-int getCurrentFolder()
-{
-  return FSC.getCurrentFolder();
-}
-
-int getNextFolder()
-{
-  return FSC.getNextFolder();
-}
-
-int getPrevFolder()
-{
-  return FSC.getPrevFolder();
-}
 
 enum SCANTYPE
 {
@@ -311,7 +297,7 @@ void loop()
       {
         turnOnPixels(0,255,0);
         FSC.setCurrentCard(getLastCard());
-        MP3_controller.folder_number = getCurrentFolder();
+        MP3_controller.folder_number = FSC.getCurrentFolder();
 
         authorized_card = true;
         MP3_controller.stop();

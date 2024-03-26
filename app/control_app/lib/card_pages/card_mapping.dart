@@ -1,3 +1,4 @@
+import 'package:control_app/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../Helpers/bluetooth_manager.dart';
@@ -20,6 +21,7 @@ class _CardMappingPageState extends State<CardMappingPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Card Mapping'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         centerTitle: true,
       ),
       body: Center(
@@ -33,11 +35,14 @@ class _CardMappingPageState extends State<CardMappingPage> {
               const Text(
                 'Please enter the folder numbers for this card \n\n',
                 textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18),
               ),
+              const SizedBox(height: 10),
               TextFormField(
                 controller: _folderController,
                 decoration: const InputDecoration(
                   labelText: 'Add Your Folders: 1,2,3',
+                  labelStyle: TextStyle(fontSize: 20),
                 ),
                 keyboardType: TextInputType.text,
                 inputFormatters: [
@@ -50,10 +55,12 @@ class _CardMappingPageState extends State<CardMappingPage> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: isButtonEnabled ? _validateAndSendToESP32 : null,
-                child: const Text('Continue'),
+              const SizedBox(height: 50),
+              CustomButton(
+                key: const Key('continueButton'),
+                onPressed:isButtonEnabled ? (){_validateAndSendToESP32;} : null,
+                text:'Continue',
+                width: 0.4,
               ),
             ],
           ),
@@ -85,6 +92,17 @@ class _CardMappingPageState extends State<CardMappingPage> {
     // Check if two commas appear consecutively
     if (input.contains(',,') || input.endsWith(',')) {
       return false;
+    }
+
+    List<String> folderNumbers = input.split(',');
+    for (String folderNumber in folderNumbers) {
+      if (folderNumber.isNotEmpty) {
+        int? number = int.tryParse(folderNumber);
+        print(number);
+        if (number == null || number > 99) {
+          return false;
+        }
+      }
     }
 
     return true;

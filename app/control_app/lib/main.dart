@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'card_pages/add_card.dart';
-import 'folder_edit.dart';
-import 'add_folder.dart';
 import 'card_pages/card_stats.dart';
 import 'global_stats.dart';
 import 'card_pages/card_setup.dart';
@@ -36,6 +34,10 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Your App Title',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+        ),
       initialRoute: '/adminLogin',
       routes: {
         '/adminLogin': (context) => const AdminLoginPage(),
@@ -45,8 +47,6 @@ class MyApp extends StatelessWidget {
         '/cardSetup': (context) => const CardSetupPage(),
         '/globalStatistics': (context) => const GlobalStatisticsPage(),
         '/cardStatistics': (context) => const CardStatisticsPage(),
-        '/addFolder': (context) => const AddFolderPage(),
-        '/folderEdit': (context) => const FolderEditPage(),
       },
     );
   }

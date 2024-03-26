@@ -1,9 +1,17 @@
 
+import 'package:control_app/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'card_mapping.dart';
 
-class CardProfilePage extends StatelessWidget {
-  const CardProfilePage({super.key});
+class CardProfilePage extends StatefulWidget {
+  const CardProfilePage({Key? key}) : super(key: key);
+
+  @override
+  _CardProfilePageState createState() => _CardProfilePageState();
+}
+
+class _CardProfilePageState extends State<CardProfilePage> {
+  String cardName = 'Card Name Placeholder';
 
   @override
   Widget build(BuildContext context) {
@@ -17,44 +25,56 @@ class CardProfilePage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Card Profile'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           centerTitle: true,
         ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('Card Name'), // Display card name here
-              const SizedBox(height: 20),
-              ElevatedButton(
+            Text(
+            cardName,
+            style: const TextStyle(fontSize: 20),
+            ),
+              const SizedBox(height: 100),
+              CustomButton(
+                key: const Key('Edit Card Name'),
                 onPressed: () {
                   // Logic to edit card name
                   // Show a text box and update button
                 },
-                child: const Text('Edit Card Name'),
+                text:'Edit Card Name',
+                width: 0.65,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 30),
+              CustomButton(
+                key: const Key('Edit Folder Range'),
                 onPressed: () {
                   Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const CardMappingPage(callerID: 'cardProfile'))
                   );
                 },
-                child: const Text('Edit Folder Range'),
+                text:'Edit Folder Range',
+                width: 0.65,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 30),
+              CustomButton(
+                key: const Key('Personal Statistics'),
                 onPressed: () {
                   Navigator.pushNamed(context, '/cardStatistics');
                 },
-                child: const Text('Personal Statistics'),
+                text: 'Personal Statistics',
+                width: 0.65,
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
+              const SizedBox(height: 30),
+              CustomButton(
+                key: const Key('Unregister Card'),
                 onPressed: () {
                   // Logic to unregister card
                 },
-                child: const Text('Unregister Card'),
+                text:'Unregister Card',
+                width: 0.65,
               ),
             ],
           ),

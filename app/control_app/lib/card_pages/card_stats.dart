@@ -9,6 +9,7 @@ class CardStatisticsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Card Statistics'),
         centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: const Center(
         child: Text(

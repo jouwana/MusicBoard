@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:control_app/custom_button.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import '../Helpers/bluetooth_manager.dart';
 
@@ -116,6 +116,8 @@ class _ScanCardPageState extends State<ScanCardPage> {
         appBar: AppBar(
           title: const Text('Add Card'),
           centerTitle: true,
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+
         ),
         body: Center(
           child: SizedBox(
@@ -129,14 +131,17 @@ class _ScanCardPageState extends State<ScanCardPage> {
                   style: TextStyle(fontSize: 18),
                 ),
                 const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: isScanning || isConnecting
+                CustomButton(
+                  key: const Key('Scan Card'),
+                  onPressed: () { isScanning || isConnecting
                       ? null
                       : () {
                         _sendCommandToESP32('scan'); // Send command to ESP32 to start scanning
-                      },
-                    child: Text(isScanning ? 'Scanning...'
+                      };},
+                    text:(isScanning ? 'Scanning...'
                         : isConnecting? 'Connecting...': 'Scan Card'),
+
+
                 ),
               ],
             ),

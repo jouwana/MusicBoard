@@ -9,6 +9,7 @@ class GlobalStatisticsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Global Statistics'),
         centerTitle: true,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: const Center(
         child: Text(

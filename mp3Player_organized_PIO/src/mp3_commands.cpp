@@ -238,6 +238,7 @@ void MP3Commands::prevFile()
     if (file_counter < 1)
     {
         prevFolder();
+        Serial.println("prev folder");
         file_counter = 4;
     }
 }

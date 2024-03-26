@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color color;
   final Color textColor;
   final double width;
   final double height;
+  final double fontSize;
 
   const CustomButton({
     //get a random value to put inside the key value
@@ -18,6 +19,7 @@ class CustomButton extends StatelessWidget {
     this.textColor = Colors.white,
     this.width = 0.0,
     this.height = 50.0,
+    this.fontSize = 20,
   }) : super(key: key);
 
   @override
@@ -27,6 +29,9 @@ class CustomButton extends StatelessWidget {
     if (buttonWidth == 0.0) {
       buttonWidth = screenWidth * 0.75;
     }
+    else {
+      buttonWidth = screenWidth * width;
+    }
 
     return SizedBox(
       width: buttonWidth,
@@ -34,9 +39,10 @@ class CustomButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          foregroundColor: textColor, backgroundColor: color,
+            elevation: 5,
         ),
-        child: Text(text),
+        child: Text(text,
+          style: TextStyle(fontSize: fontSize)),
       ),
     );
   }
